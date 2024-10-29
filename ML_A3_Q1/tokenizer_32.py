@@ -1,13 +1,21 @@
-
+import os
 import pickle
+import streamlit as st
 
 def save_tokenizer(tokenizer, path='tokenizer_32.pkl'):
     # Save the tokenizer to a file
     with open(path, 'wb') as f:
         pickle.dump(tokenizer, f)
 
-def load_tokenizer(path='tokenizer_32.pkl'):
+def load_tokenizer(path=None):
     # Load the tokenizer from a file
-    with open(path, 'rb') as f:
-        tokenizer = pickle.load(f)
-    return tokenizer
+    path = path or os.path.join(os.path.dirname(__file__), 'tokenizer_32.pkl')
+    st.write("Loading tokenizer from:", path)
+    
+    if os.path.exists(path):
+        with open(path, 'rb') as f:
+            tokenizer = pickle.load(f)
+        return tokenizer
+    else:
+        st.error(f"Tokenizer file not found at path: {path}")
+        return None
