@@ -1,31 +1,32 @@
+import pickle
 import streamlit as st
 import torch
+import gdown
 from model import NextWord
 from tokenizer_32 import load_tokenizer as load_tokenizer_32
 from tokenizer_64 import load_tokenizer as load_tokenizer_64
 from tokenizer_32_holmes import load_tokenizer as load_tokenizer_32_holmes
 from tokenizer_64_holmes import load_tokenizer as load_tokenizer_64_holmes
-import gdown
-import pickle
 
-# Define URLs for your models
+# Define URLs for models stored on Google Drive
 model_urls = {
-    "embedding32_hidden1024": "https://drive.google.com/file/d/1kkn-aNvRoDE86RNsK5eBV5HHPGFqZj7V/view?usp=sharing",
-    "embedding64_hidden1024": "https://drive.google.com/file/d/1sr9EYHDw5SwjUiK1ZAzTeMaWGXXzf-af/view?usp=sharing",
-    "embedding32_hidden1024_holmes": "https://drive.google.com/file/d/1g0X3zi93WCUEqqwhgeP1tvUqIPhBeMV2/view?usp=sharing",
-    "embedding64_hidden1024_holmes": "https://drive.google.com/file/d/1Ju6rW8adYsFC_XUtem7B0p-Z-crF3-je/view?usp=sharing",
+    "embedding32_hidden1024": "https://drive.google.com/uc?id=1kkn-aNvRoDE86RNsK5eBV5HHPGFqZj7V",
+    "embedding64_hidden1024": "https://drive.google.com/uc?id=1sr9EYHDw5SwjUiK1ZAzTeMaWGXXzf-af",
+    "embedding32_hidden1024_holmes": "https://drive.google.com/uc?id=1g0X3zi93WCUEqqwhgeP1tvUqIPhBeMV2",
+    "embedding64_hidden1024_holmes": "https://drive.google.com/uc?id=1Ju6rW8adYsFC_XUtem7B0p-Z-crF3-je",
 }
 
-# Download models from Google Drive
-for variant_name, url in model_urls.items():
+# Download and cache models from Google Drive
+def download_model(variant_name):
     output_file = f"{variant_name}.pt"
-    gdown.download(url, output_file, quiet=False)
-
+    if not os.path.exists(output_file):
+        gdown.download(model_urls[variant_name], output_file, quiet=False)
+    return output_file
 
 # Load Model
 @st.cache_resource  # Caches model to avoid reloading on each interaction
 def load_model(variant_name, block_size, embedding_dim, activation_func):
-    # Load the tokenizer based on the model variant
+    # Select the appropriate tokenizer
     if variant_name == "embedding32_hidden1024":
         tokenizer = load_tokenizer_32()
     elif variant_name == "embedding64_hidden1024":
@@ -44,10 +45,11 @@ def load_model(variant_name, block_size, embedding_dim, activation_func):
     model = NextWord(block_size=block_size, vocab_size=len(stoi) + 1, emb_dim=embedding_dim, hidden_size=1024, activation_func=activation_func)
     
     # Load model weights
-    state_dict = torch.load(f"C:/Users/katta/Downloads/{variant_name}.pt", map_location=torch.device('cpu'))
+    model_path = download_model(variant_name)
+    state_dict = torch.load(model_path, map_location=torch.device('cpu'))
     compatible_state_dict = {k[len('_orig_mod.'):] if k.startswith('_orig_mod.') else k: v for k, v in state_dict.items()}
     model.load_state_dict(compatible_state_dict)
-    model.eval()  # Set model to evaluation mode
+    model.eval()
     
     return model, tokenizer, stoi, itos
 
@@ -57,8 +59,8 @@ user_input = st.text_input("Enter a sentence:", "The quick brown fox")
 context_length = st.slider("Context Length", 1, 10, 5)
 embedding_dim = st.selectbox("Embedding Dimension", [32, 64])
 activation_func = st.selectbox("Activation Function", ["relu", "tanh", "sigmoid"])
-variant = st.selectbox("Choose Model Variant", ["embedding32_hidden1024", "embedding64_hidden1024", "embedding32_hidden1024_holmes", "embedding64_hidden1024_holmes"])
-word_count = st.slider("Number of words to predict", 1, 20, 10)  # Number of words to generate
+variant = st.selectbox("Choose Model Variant", list(model_urls.keys()))
+word_count = st.slider("Number of words to predict", 1, 20, 10)
 
 # Load the selected model and tokenizer
 model, tokenizer, stoi, itos = load_model(variant, context_length, embedding_dim, activation_func)
@@ -74,33 +76,25 @@ if missing_words:
 # Generate Prediction Function
 def generate_prediction(model, input_text, word_count, context_length):
     tokens = tokenizer.texts_to_sequences([input_text])[0]
-    
-    # Replace unknown tokens with a placeholder
-    context = [stoi.get('.', None)] * context_length  # Initialize context with padding if needed
-
-    for token in tokens[-context_length:]:  # Populate context from user input
-        if token is not None:  # Only add valid tokens to the context
+    context = [stoi.get('.', None)] * context_length
+    for token in tokens[-context_length:]:
+        if token is not None:
             context = context[1:] + [token]
         else:
-            context = context[1:] + [stoi.get('[UNK]', None)]  # Placeholder for unknown tokens
+            context = context[1:] + [stoi.get('[UNK]', None)]
 
     sentence = ""
     for _ in range(word_count):
         x = torch.tensor([context], dtype=torch.long)
-        
-        # Ensure that x is not empty (context may be all placeholders)
         if x.size(1) == 0:
             break
-        
         y_pred = model(x)
         ix = torch.distributions.Categorical(logits=y_pred).sample().item()
-        word = itos.get(ix, "[UNK]")  # Default to "[UNK]" if the index is not in `itos`
-        
+        word = itos.get(ix, "[UNK]")
         if word == '.':
             break
         sentence += word + " "
-        context = context[1:] + [ix]  # Update context with predicted word
-        
+        context = context[1:] + [ix]
     return sentence.strip()
 
 # Display generated prediction
