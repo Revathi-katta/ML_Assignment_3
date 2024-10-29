@@ -1,3 +1,4 @@
+import os  # Add this import
 import pickle
 import streamlit as st
 import torch
@@ -38,6 +39,11 @@ def load_model(variant_name, block_size, embedding_dim, activation_func):
     else:
         raise ValueError(f"Unknown model variant: {variant_name}")
 
+    # Check if tokenizer loaded correctly
+    if tokenizer is None:
+        st.error("Failed to load tokenizer. Please check that the tokenizer file exists.")
+        return None, None, None, None
+
     stoi = tokenizer.word_index
     itos = {i: w for w, i in stoi.items()}
 
@@ -66,12 +72,15 @@ word_count = st.slider("Number of words to predict", 1, 20, 10)
 model, tokenizer, stoi, itos = load_model(variant, context_length, embedding_dim, activation_func)
 
 # Check for unknown words in user input
-known_words = set(stoi.keys())
-user_words = user_input.split()
-missing_words = [word for word in user_words if word not in known_words]
+if tokenizer and stoi:
+    known_words = set(stoi.keys())
+    user_words = user_input.split()
+    missing_words = [word for word in user_words if word not in known_words]
 
-if missing_words:
-    st.warning(f"The following words are not in the vocabulary: {', '.join(missing_words)}. Using placeholders for unknown words.")
+    if missing_words:
+        st.warning(f"The following words are not in the vocabulary: {', '.join(missing_words)}. Using placeholders for unknown words.")
+else:
+    st.error("Tokenizer or vocabulary not properly loaded.")
 
 # Generate Prediction Function
 def generate_prediction(model, input_text, word_count, context_length):
@@ -101,3 +110,4 @@ def generate_prediction(model, input_text, word_count, context_length):
 if user_input and model:
     prediction = generate_prediction(model, user_input, word_count, context_length)
     st.write("Generated Text:", prediction)
+
