@@ -5,6 +5,18 @@ from tokenizer_32 import load_tokenizer as load_tokenizer_32
 from tokenizer_64 import load_tokenizer as load_tokenizer_64
 from tokenizer_32_holmes import load_tokenizer as load_tokenizer_32_holmes
 from tokenizer_64_holmes import load_tokenizer as load_tokenizer_64_holmes
+import gdown
+import pickle
+
+# Replace with the actual shared link from Google Drive
+url = "https://drive.google.com/drive/folders/117AjvnNhH-Zg7qlyf0wHcV-k2qWyjOMw?usp=drive_link"
+output = "tokenizer_64_holmes.pkl"
+gdown.download(url, output, quiet=False)
+
+def load_tokenizer(path='tokenizer_64_holmes.pkl'):
+    with open(path, 'rb') as f:
+        tokenizer = pickle.load(f)
+    return tokenizer
 
 # Load Model
 @st.cache_resource  # Caches model to avoid reloading on each interaction
