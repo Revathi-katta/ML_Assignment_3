@@ -1,31 +1,19 @@
 import pickle
-import streamlit as st
+import gdown
 import os
 
-def save_tokenizer(tokenizer, path='tokenizer_64_holmes.pkl'):
-    # Save the tokenizer to a file
-    with open(path, 'wb') as f:
-        pickle.dump(tokenizer, f)
-    st.success(f"Tokenizer saved to {path}")
+# Define the URL for the tokenizer file on Google Drive
+TOKENIZER_URL = "https://drive.google.com/file/d/1RpEo4AdjVbdJTGuD-NrFdd2Zud9lUu8F/view?usp=sharing"
 
-def load_tokenizer(path='tokenizer_64_holmes.pkl'):
-    # Load the tokenizer from a file
-    if os.path.exists(path):
-        with open(path, 'rb') as f:
-            tokenizer = pickle.load(f)
-        st.success(f"Tokenizer loaded from {path}")
-        return tokenizer
-    else:
-        st.error(f"Tokenizer file not found at {path}")
-        return None
+def download_tokenizer(path='tokenizer.pkl'):
+    """Download the tokenizer from Google Drive if it doesn't exist locally."""
+    if not os.path.exists(path):
+        gdown.download(TOKENIZER_URL, path, quiet=False)
+    return path
 
-# Example usage in your Streamlit app
-st.title("Tokenizer Example")
-
-# Load tokenizer when app runs
-tokenizer = load_tokenizer()
-
-if tokenizer is None:
-    # Example: Create a new tokenizer if not loaded
-    # tokenizer = create_tokenizer(your_data)
-    save_tokenizer(tokenizer)
+def load_tokenizer(path='tokenizer.pkl'):
+    """Load the tokenizer from a file."""
+    download_tokenizer(path)  # Ensure the tokenizer file is downloaded
+    with open(path, 'rb') as f:
+        tokenizer = pickle.load(f)
+    return tokenizer
