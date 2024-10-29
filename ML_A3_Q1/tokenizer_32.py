@@ -1,6 +1,7 @@
 import json
 import pickle
-from keras.preprocessing.text import Tokenizer, tokenizer_from_json
+
+from keras.preprocessing.text import tokenizer_from_json
 
 def save_tokenizer(tokenizer, path='tokenizer_32.pkl'):
     # Save the tokenizer to a file
