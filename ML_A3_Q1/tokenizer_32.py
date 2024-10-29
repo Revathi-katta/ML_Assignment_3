@@ -1,20 +1,13 @@
+
 import pickle
-import gdown
-import os
 
-# Define the URL for the tokenizer file on Google Drive
-TOKENIZER_URL = "https://drive.google.com/file/d/145sobjWSSubTtjQzFoMkBn_5aNKdLxHb/view?usp=sharing"
+def save_tokenizer(tokenizer, path='ML_A3_Q1/tokenizer_32.pkl'):
+    # Save the tokenizer to a file
+    with open(path, 'wb') as f:
+        pickle.dump(tokenizer, f)
 
-def download_tokenizer(path='tokenizer.pkl'):
-    """Download the tokenizer from Google Drive if it doesn't exist locally."""
-    if not os.path.exists(path):
-        gdown.download(TOKENIZER_URL, path, quiet=False)
-    return path
-
-def load_tokenizer(path='tokenizer.pkl'):
-    """Load the tokenizer from a file."""
-    download_tokenizer(path)  # Ensure the tokenizer file is downloaded
+def load_tokenizer(path='ML_A3_Q1/tokenizer_32.pkl'):
+    # Load the tokenizer from a file
     with open(path, 'rb') as f:
         tokenizer = pickle.load(f)
     return tokenizer
-
