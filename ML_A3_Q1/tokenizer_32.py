@@ -1,21 +1,21 @@
-import os
+import json
 import pickle
-import streamlit as st
+from keras.preprocessing.text import Tokenizer, tokenizer_from_json
 
 def save_tokenizer(tokenizer, path='tokenizer_32.pkl'):
     # Save the tokenizer to a file
     with open(path, 'wb') as f:
         pickle.dump(tokenizer, f)
 
-def load_tokenizer(path=None):
+def load_tokenizer(path='tokenizer_32.pkl'):
     # Load the tokenizer from a file
-    path = path or os.path.join(os.path.dirname(__file__), 'tokenizer_32.pkl')
-    st.write("Loading tokenizer from:", path)
-    
-    if os.path.exists(path):
-        with open(path, 'rb') as f:
-            tokenizer = pickle.load(f)
-        return tokenizer
-    else:
-        st.error(f"Tokenizer file not found at path: {path}")
-        return None
+    with open(path, 'rb') as f:
+        tokenizer = pickle.load(f)
+    return tokenizer
+
+def load_tokenizer_json(path='tokenizer_32.json'):
+    # Load the tokenizer from a JSON file
+    with open(path) as f:
+        data = json.load(f)
+        tokenizer = tokenizer_from_json(data)
+    return tokenizer
