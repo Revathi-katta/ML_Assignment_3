@@ -8,15 +8,19 @@ from tokenizer_64_holmes import load_tokenizer as load_tokenizer_64_holmes
 import gdown
 import pickle
 
-# Replace with the actual shared link from Google Drive
-url = "https://drive.google.com/drive/folders/117AjvnNhH-Zg7qlyf0wHcV-k2qWyjOMw?usp=drive_link"
-output = "tokenizer_64_holmes.pkl"
-gdown.download(url, output, quiet=False)
+# Define URLs for your models
+model_urls = {
+    "embedding32_hidden1024": "https://drive.google.com/file/d/1kkn-aNvRoDE86RNsK5eBV5HHPGFqZj7V/view?usp=sharing",
+    "embedding64_hidden1024": "https://drive.google.com/file/d/1sr9EYHDw5SwjUiK1ZAzTeMaWGXXzf-af/view?usp=sharing",
+    "embedding32_hidden1024_holmes": "https://drive.google.com/file/d/1g0X3zi93WCUEqqwhgeP1tvUqIPhBeMV2/view?usp=sharing",
+    "embedding64_hidden1024_holmes": "https://drive.google.com/file/d/1Ju6rW8adYsFC_XUtem7B0p-Z-crF3-je/view?usp=sharing",
+}
 
-def load_tokenizer(path='tokenizer_64_holmes.pkl'):
-    with open(path, 'rb') as f:
-        tokenizer = pickle.load(f)
-    return tokenizer
+# Download models from Google Drive
+for variant_name, url in model_urls.items():
+    output_file = f"{variant_name}.pt"
+    gdown.download(url, output_file, quiet=False)
+
 
 # Load Model
 @st.cache_resource  # Caches model to avoid reloading on each interaction
