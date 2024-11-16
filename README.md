@@ -19,7 +19,7 @@ This Streamlit application predicts the next word in a sentence using various pr
 2. Install the requirements: `pip install -r requirements.txt`.
 3. Run the app: `streamlit run app.py`.
 
-Assignment Tasks: [here](https://docs.google.com/document/d/1yBnpSjja3iZNH-6iB2l4AlksyQg6v3cQesYzJYfQr9o/edit?usp=sharing)
+Assignment Tasks: [docs link here](https://docs.google.com/document/d/1yBnpSjja3iZNH-6iB2l4AlksyQg6v3cQesYzJYfQr9o/edit?usp=sharing)
 
 1. Refer to the notebook on generating names using next-character prediction and modify it
 for generating text using next-word prediction (You have to implement MLP based text
@@ -106,7 +106,7 @@ XOR function.
   Show the decision surface and comment on the plots obtained for different
   models. [2 marks]
 
-c. Train on MNIST dataset using an MLP. The original training dataset contains 60,000
+3. Train on MNIST dataset using an MLP. The original training dataset contains 60,000
 images and test contains 10,000 images. If you are short on compute, use a stratified
 subset of a smaller number of images. But, the test set remains the same 10,000
 images. Compare against RF and Logistic Regression models. The metrics can be:
